@@ -10,9 +10,7 @@ import jdk.internal.util.xml.impl.Input;
 import server.NettySession;
 import server.NettySessionMannager;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Set;
 
 public class HttpServletRequest {
@@ -24,19 +22,39 @@ public class HttpServletRequest {
         this.fullHttpRequest = fullHttpRequest;
     }
 
+    /**
+     * 获取cookie
+     *
+     * @return
+     */
     public Cookie[] getCookies() {
         Set<Cookie> cookies = ServerCookieDecoder.LAX.decode(this.fullHttpRequest.headers().get(HttpHeaders.Names.COOKIE));
         return (Cookie[]) cookies.toArray();
     }
 
+    /**
+     * 获取请求data的length
+     *
+     * @return
+     */
     public long getDataLength() {
         return Long.valueOf(fullHttpRequest.headers().get(HttpHeaders.Names.CONTENT_LENGTH));
     }
 
+    /**
+     * 获取请求头
+     *
+     * @return
+     */
     public String getHeader() {
         return fullHttpRequest.headers().toString();
     }
 
+    /**
+     * 获取http请求方法
+     *
+     * @return
+     */
     public String getMethod() {
         if (fullHttpRequest.method() == HttpMethod.GET) {
             return "GET";
@@ -50,15 +68,32 @@ public class HttpServletRequest {
         return fullHttpRequest.uri();
     }
 
+    /**
+     * 获取sessionId
+     *
+     * @return
+     */
     public String getSessionID() {
         return this.channelHandlerContext.name();
     }
 
+    /**
+     * 获取session
+     *
+     * @return
+     */
     public NettySession getSession() {
         return NettySessionMannager.getSession(channelHandlerContext);
     }
 
-    public InputStream getInputStream(){
+    /**
+     * 获取输入流
+     *
+     * @return
+     */
+    public InputStream getInputStream() {
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(this.fullHttpRequest.content().array());
+        return inputStream;
     }
 
 

@@ -6,15 +6,11 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.*;
-import io.netty.handler.codec.http.cookie.Cookie;
-import io.netty.handler.codec.http.cookie.CookieDecoder;
-import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.util.CharsetUtil;
+import server.domain.HttpServletRequest;
 
 import java.io.*;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 
 public class AriesHttpHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
@@ -25,36 +21,39 @@ public class AriesHttpHandler extends SimpleChannelInboundHandler<FullHttpReques
      * @param fullHttpRequest
      * @throws Exception
      */
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, FullHttpRequest fullHttpRequest) throws Exception {
-        String uri = fullHttpRequest.uri();
-        System.out.println("URI:" + uri);
-        System.out.println("METHOD:" + fullHttpRequest.method().name());
+    protected void channelRead0(ChannelHandlerContext channelHandlerContext, FullHttpRequest fullHttpRequest) {
+//        String uri = fullHttpRequest.uri();
+//        System.out.println("URI:" + uri);
+//        System.out.println("METHOD:" + fullHttpRequest.method().name());
+//
+//        if (uri.equals("/favicon.ico")) {
+//            channelHandlerContext.write(returnImg()).addListener(ChannelFutureListener.CLOSE);
+//            System.out.println("did");
+//            return;
+//        }
+//        if (fullHttpRequest.method() == HttpMethod.GET) {
+//            Map<String, String> paramMap = ParamResolveUtil.getParameterMap(fullHttpRequest);
+//
+//            for (Map.Entry<String, String> entry : paramMap.entrySet()) {
+//                System.out.println(entry.getKey() + "     " + entry.getValue());
+//            }
+//        }
+//        //获取cookie
+//
+//        // Cookie[] cookies = (Cookie[]) ServerCookieDecoder.LAX.decode(fullHttpRequest.headers().get(HttpHeaders.Names.COOKIE)).toArray();
+//
+//        ByteBuf httpContentByteBuf = fullHttpRequest.content();
+//        String httpContent = httpContentByteBuf.toString(CharsetUtil.UTF_8);
+//
+//        System.out.println("Content:" + httpContent);
+//
+//        FullHttpResponse httpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+//        ByteBuf byteBuf = Unpooled.copiedBuffer("HTTP-OK", CharsetUtil.UTF_8);
+//        httpResponse.content().writeBytes(byteBuf);
+//        channelHandlerContext.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);
+        HttpServletRequest request = new HttpServletRequest(fullHttpRequest, channelHandlerContext);
+        System.out.println(request.getDataLength() + "  " + request.getInputStream().toString() + "  " + request.getHeader());
 
-        if (uri.equals("/favicon.ico")) {
-            channelHandlerContext.write(returnImg()).addListener(ChannelFutureListener.CLOSE);
-            System.out.println("did");
-            return;
-        }
-        if (fullHttpRequest.method() == HttpMethod.GET) {
-            Map<String, String> paramMap = ParamResolveUtil.getParameterMap(fullHttpRequest);
-
-            for (Map.Entry<String, String> entry : paramMap.entrySet()) {
-                System.out.println(entry.getKey() + "     " + entry.getValue());
-            }
-        }
-        //获取cookie
-
-        // Cookie[] cookies = (Cookie[]) ServerCookieDecoder.LAX.decode(fullHttpRequest.headers().get(HttpHeaders.Names.COOKIE)).toArray();
-
-        ByteBuf httpContentByteBuf = fullHttpRequest.content();
-        String httpContent = httpContentByteBuf.toString(CharsetUtil.UTF_8);
-
-        System.out.println("Content:" + httpContent);
-
-        FullHttpResponse httpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-        ByteBuf byteBuf = Unpooled.copiedBuffer("HTTP-OK", CharsetUtil.UTF_8);
-        httpResponse.content().writeBytes(byteBuf);
-        channelHandlerContext.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);
     }
 
 
