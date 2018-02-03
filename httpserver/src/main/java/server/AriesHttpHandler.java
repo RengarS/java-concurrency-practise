@@ -44,7 +44,7 @@ public class AriesHttpHandler extends SimpleChannelInboundHandler<FullHttpReques
         }
         //获取cookie
 
-        Cookie[] cookies = (Cookie[]) ServerCookieDecoder.LAX.decode(fullHttpRequest.headers().get(HttpHeaders.Names.COOKIE)).toArray();
+        // Cookie[] cookies = (Cookie[]) ServerCookieDecoder.LAX.decode(fullHttpRequest.headers().get(HttpHeaders.Names.COOKIE)).toArray();
 
         ByteBuf httpContentByteBuf = fullHttpRequest.content();
         String httpContent = httpContentByteBuf.toString(CharsetUtil.UTF_8);
@@ -54,9 +54,6 @@ public class AriesHttpHandler extends SimpleChannelInboundHandler<FullHttpReques
         FullHttpResponse httpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
         ByteBuf byteBuf = Unpooled.copiedBuffer("HTTP-OK", CharsetUtil.UTF_8);
         httpResponse.content().writeBytes(byteBuf);
-
-        //throw new RuntimeException();
-        byteBuf.release();
         channelHandlerContext.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);
     }
 
@@ -87,6 +84,7 @@ public class AriesHttpHandler extends SimpleChannelInboundHandler<FullHttpReques
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
         //super.channelReadComplete(ctx);
+        System.out.println(ctx.isRemoved());
         ctx.flush();
     }
 
