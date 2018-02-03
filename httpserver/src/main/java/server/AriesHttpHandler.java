@@ -6,11 +6,15 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.CookieDecoder;
+import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.util.CharsetUtil;
 
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 
 public class AriesHttpHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
@@ -32,18 +36,17 @@ public class AriesHttpHandler extends SimpleChannelInboundHandler<FullHttpReques
             return;
         }
         if (fullHttpRequest.method() == HttpMethod.GET) {
-            Map<String, String> paramMap = getParameterMap(fullHttpRequest);
+            Map<String, String> paramMap = ParamResolveUtil.getParameterMap(fullHttpRequest);
 
             for (Map.Entry<String, String> entry : paramMap.entrySet()) {
                 System.out.println(entry.getKey() + "     " + entry.getValue());
             }
         }
+        //获取cookie
 
+        Cookie[] cookies = (Cookie[]) ServerCookieDecoder.LAX.decode(fullHttpRequest.headers().get(HttpHeaders.Names.COOKIE)).toArray();
 
         ByteBuf httpContentByteBuf = fullHttpRequest.content();
-
-        fullHttpRequest.headers().get(HttpHeaders.Names.COOKIE);
-
         String httpContent = httpContentByteBuf.toString(CharsetUtil.UTF_8);
 
         System.out.println("Content:" + httpContent);
@@ -57,25 +60,6 @@ public class AriesHttpHandler extends SimpleChannelInboundHandler<FullHttpReques
         channelHandlerContext.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);
     }
 
-    /**
-     * 获取get请求的参数列表
-     *
-     * @param fullHttpRequest
-     * @return
-     */
-    private Map<String, String> getParameterMap(FullHttpRequest fullHttpRequest) {
-        String uri = fullHttpRequest.uri();
-
-        int index = uri.lastIndexOf("?");
-        String parameterStr = uri.substring(index + 1);
-        String[] parameters = parameterStr.split("&");
-        Map<String, String> parameterMap = new HashMap<String, String>(parameters.length, 1.0F);
-        for (String param : parameters) {
-            int index2 = param.lastIndexOf("=");
-            parameterMap.put(param.substring(0, index2), param.substring(index2 + 1));
-        }
-        return parameterMap;
-    }
 
     /**
      * 产生异常
@@ -87,7 +71,9 @@ public class AriesHttpHandler extends SimpleChannelInboundHandler<FullHttpReques
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         //super.exceptionCaught(ctx, cause);
+        //打印异常
         cause.printStackTrace();
+        //返回500
         HttpResponse httpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR);
         ctx.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);
     }
@@ -104,6 +90,11 @@ public class AriesHttpHandler extends SimpleChannelInboundHandler<FullHttpReques
         ctx.flush();
     }
 
+    /**
+     * 返回一个页面
+     *
+     * @return
+     */
     private static HttpResponse returnImg() {
         File file = new File("/Users/wulingyunyingzhongxin/Desktop/logo.png");
         byte[] bytes = new byte[17000];
@@ -116,8 +107,6 @@ public class AriesHttpHandler extends SimpleChannelInboundHandler<FullHttpReques
             response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "image/jpeg;charset=UTF-8");
             response.content().writeBytes(byteBuf);
             return response;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
